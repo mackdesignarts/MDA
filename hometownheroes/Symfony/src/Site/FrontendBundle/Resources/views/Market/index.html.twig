@@ -1,0 +1,103 @@
+{% extends 'SiteFrontendBundle::layout.html.twig' %}
+
+{% block title %}{{ site.name }}{% endblock %}
+
+{#COMMENTED OUT ... USE FOR MENUS LATER ... % block content_header '' %#}
+
+{% block content %}
+
+	{% if (app.user is null) %}
+	  <div id="hth-home-about" class="hthads-wrap">
+	    <div class="hthads-container">
+		    <div class="hthads-category" style="background:#ffffff">
+		      <i class="hth-about"></i>
+          <h4>hometown heroes</h4>
+        </div>
+	      <div class="hth-home-cta">
+	        {% trans %}about.content{% endtrans %}
+	        <a href="{{ path('frontend_leads_register') }}" class="btn btn-danger btn-large">Join FREE</a>
+	      </div>
+	      <div class="hth-home-learn">
+	      	<a href="/about_us" class="btn">Learn More</a>
+	      	<p>Military Personnel, School Teachers, Police Personnel, Fire Personnel, Medical Personnel, ISD & College Employees, and Non-Profit Employees</p>
+	      </div>
+	      <img src="/bundles/sitefrontend/images/banners/free-account-right.png" alt="free account" class="free-banner-right"/>
+		  </div>
+		</div>
+	{% endif %}
+    
+   	<div class="hthads-collection"> 
+		{% for preview in previews %}
+			{% include 'SiteFrontendBundle:Listing:preview.html.twig' %}
+		{% endfor %}
+	</div>
+    
+    <div class="clear-fix padding-bottom-24"></div>
+
+	{% if totalPages > 1 %}
+	<a href="#" class="load-ads alert alert-success">
+		Load More Ads
+		<img class="spinner" src="{{ asset('bundles/sitebackend/img/spin.gif') }}">
+	</a>
+	{% endif %}
+
+{% endblock %}
+
+{% block javascripts %}
+	{{ parent() }}
+	<script type="text/javascript">
+		$(function() {
+			var $spinner = $('.load-ads .spinner');
+
+			var page = 1;
+
+			$spinner.toggle();
+
+			$('.load-ads').click(function(e) {
+				e.preventDefault();
+
+				$spinner.toggle();
+
+				page++;
+
+				$.ajax({
+					url: Routing.generate('market', {
+						'market_slug': '{{ market.slug }}',
+						'state_slug': '{{ market.state.slug }}',
+						'page': page
+					}),
+					type: 'POST',
+					data: {ajax: true},
+					dataType: 'html',
+					complete: function() {
+						$spinner.toggle();
+					},
+					success: function(html) {
+						if(page == {{ totalPages }})
+						{
+							$('.load-ads').hide();
+						}
+
+						$('.hthads-collection').append(html);
+					}
+				});
+			});
+		});
+	</script>
+	{% if (app.user is null) %}
+	<script>
+    $(document).ready(function(){
+      if (!(jQuery.browser.mobile))
+        {
+          $('#aboutHome').modal('show');
+        }
+    });
+	</script>
+	{% endif %}
+{% endblock %}
+
+{% block modal %}
+{% if hideModal != true %}
+{% include 'SiteFrontendBundle:modal:abouthome.html.twig' %}
+{% endif %}
+{% endblock %}
